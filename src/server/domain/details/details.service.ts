@@ -10,6 +10,14 @@ export class DetailsService {
   }
 
   async attachDetail(taskId: string, content: string): Promise<TaskDetail> {
+    // Deduplicate: skip if exact same content already attached to this task
+    const exists = await this.repo.existsByContent(taskId, content);
+    if (exists) {
+      const existing = await this.repo.findByTaskId(taskId);
+      const match = existing.find((d: { content: string }) => d.content === content);
+      if (match) return this.toDetail(match);
+    }
+
     const id = crypto.randomUUID();
     const row = await this.repo.create(id, taskId, content);
     return this.toDetail(row!);

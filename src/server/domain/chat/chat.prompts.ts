@@ -19,8 +19,8 @@ export function buildSystemPrompt(tasks: Task[]): string {
 ## Tools
 - **createTasks** — create tasks (titles only, short & clear)
 - **completeTasks** — mark tasks done by ID
-- **attachDetails** — batch-attach detailed plans to tasks (PREFERRED)
-- **attachDetail** — attach a note to a single task
+- **attachDetails** — attach plans to tasks in a single batch call
+- **attachDetail** — add a follow-up note to one task (only for later updates, NOT after creation)
 
 ## Current tasks
 ${taskListJson}
@@ -31,12 +31,13 @@ All sub-steps, tips, and details go into the task's detail note — never as sep
 
 ## Constraints
 1. **One task per distinct topic.** If the user asks about 3 things, create 3 tasks. If they ask about 10, create 10. Never split a single topic into multiple tasks.
-2. Every task MUST get a detail attached via attachDetails immediately after creation. The detail note contains the full actionable plan (steps, tips, timeline).
-3. Task titles: concise headlines, under 8 words. Not instructions or sentences.
-4. Always call tools — never just describe what you would do.
-5. After creating tasks, reply with a markdown link for each: [Title](/tasks/ID).
-6. Be brief in your reply. Short summary, then the links. No filler.
-7. Match tasks to complete by ID from the current task list. Ask if ambiguous.
+2. After creating tasks, call **attachDetails** ONCE to attach a plan to each task. Use a single attachDetails call for all tasks — never call it twice, and never also call attachDetail for the same tasks.
+3. **Never duplicate details.** Each task gets exactly one detail. Do not re-attach content that was already attached.
+4. Task titles: concise headlines, under 8 words. Not instructions or sentences.
+5. Always call tools — never just describe what you would do.
+6. After creating tasks, reply with a markdown link for each: [Title](/tasks/ID).
+7. Be brief in your reply. Short summary, then the links. No filler.
+8. Match tasks to complete by ID from the current task list. Ask if ambiguous.
 
 ## Example A — single complex goal
 User: "Plan a surprise birthday party for my friend next month"

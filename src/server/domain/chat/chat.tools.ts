@@ -69,7 +69,7 @@ export function createChatTools(
 
     attachDetail: tool({
       description:
-        "Attach a free-text note or detail to a single task. Use for adding context, notes, or updates to one existing task.",
+        "Add a follow-up note to ONE existing task. Only use this for later updates or additions — NOT for initial task planning (use attachDetails batch instead).",
       inputSchema: zodSchema(
         z.object({
           taskId: z.string().describe("ID of the task to attach the detail to"),
@@ -88,7 +88,7 @@ export function createChatTools(
 
     attachDetails: tool({
       description:
-        "Attach notes/details to multiple tasks at once (batch). PREFERRED over calling attachDetail multiple times. Use after creating tasks to add actionable plans to each one.",
+        "Batch-attach plans to tasks. Call this ONCE after createTasks to add detailed plans. Do NOT also call attachDetail for the same tasks.",
       inputSchema: zodSchema(
         z.object({
           items: z
@@ -118,7 +118,7 @@ export function createChatTools(
           success: true,
           attached: results.length,
           details: results,
-          message: `Attached details to ${results.length} task(s)`,
+          message: `Attached details to ${results.length} task(s). Details are saved — do NOT call attachDetail or attachDetails again for these tasks.`,
         };
       },
     }),
