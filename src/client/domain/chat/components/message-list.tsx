@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import type { UIMessage } from "ai";
 import { cn } from "@/lib/utils";
 import { User, Bot, Loader2 } from "lucide-react";
@@ -16,9 +16,26 @@ interface MessageListProps {
 export function MessageList({ messages, isLoading, isFetchingHistory }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
+  }, []);
+
+  // Scroll when messages change or loading state changes
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading, scrollToBottom]);
+
+  // Also scroll when the visual viewport resizes (mobile keyboard open/close)
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const handleResize = () => {
+      // Small delay so layout settles before scrolling
+      requestAnimationFrame(scrollToBottom);
+    };
+    vv.addEventListener("resize", handleResize);
+    return () => vv.removeEventListener("resize", handleResize);
+  }, [scrollToBottom]);
 
   if (messages.length === 0 && !isFetchingHistory) {
     return (

@@ -30,6 +30,15 @@ export function MessageInput({
     }
   };
 
+  // When the textarea gains focus (keyboard opens on mobile),
+  // scroll the message list so the latest messages stay visible.
+  const onFocus = () => {
+    // Small delay to let the keyboard finish animating
+    setTimeout(() => {
+      inputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 300);
+  };
+
   return (
     <div className="border-t border-border bg-card shrink-0">
       <div className="flex items-center px-2 pt-1.5 sm:px-3 md:px-4 sm:pt-2">
@@ -41,6 +50,7 @@ export function MessageInput({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKeyDown}
+          onFocus={onFocus}
           placeholder="Type a message..."
           className="flex-1 resize-none rounded-sm border border-border bg-background px-2.5 py-2 sm:px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-10 max-h-30"
           rows={1}
