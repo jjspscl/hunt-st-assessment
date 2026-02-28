@@ -7,9 +7,13 @@ import { AuthGate } from "@/client/domain/auth/components/auth-gate";
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <AuthGate>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col bg-background">
         <Header />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 container max-w-6xl mx-auto px-6 py-6">
+          <div className="h-full border border-border rounded-sm bg-card">
+            {children}
+          </div>
+        </main>
       </div>
     </AuthGate>
   );

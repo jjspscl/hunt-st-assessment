@@ -1,45 +1,28 @@
 @import "tailwindcss";
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-}
+/* ── Warm Minimalist Fintech with Neo-Brutalist Influence ── */
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.556 0 0);
+:root {
+  --background: #F4EFE6;
+  --foreground: #1E1E1E;
+  --card: #FFFFFF;
+  --card-foreground: #1E1E1E;
+  --popover: #FFFFFF;
+  --popover-foreground: #1E1E1E;
+  --primary: #FF6A3D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1F2A37;
+  --secondary-foreground: #FFFFFF;
+  --muted: #E8E1D8;
+  --muted-foreground: #6B6560;
+  --accent: #FF6A3D;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --border: rgba(30, 30, 30, 0.7);
+  --input: #E8E1D8;
+  --ring: #FF6A3D;
+  --radius: 2px;
+  --shadow-brutal: 2px 2px 0px #1E1E1E;
 }
 
 @theme inline {
@@ -72,4 +55,15 @@ body {
 
 * {
   border-color: var(--border);
+}
+
+/* ── Global resets for neo-brutalist feel ── */
+
+button, input, textarea, select {
+  border-radius: var(--radius);
+}
+
+/* Remove heavy shadows globally */
+* {
+  --tw-shadow: none;
 }

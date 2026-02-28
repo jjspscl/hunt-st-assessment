@@ -33,14 +33,14 @@ export function TaskCard({ task }: TaskCardProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-lg border p-3 transition-colors",
-        isCompleted ? "bg-muted/50 opacity-75" : "bg-background"
+        "flex items-center gap-3 rounded-sm border border-border p-3 transition-colors",
+        isCompleted ? "bg-muted/40 opacity-75" : "bg-card hover:shadow-[2px_2px_0px_#1E1E1E] hover:translate-x-[-1px] hover:translate-y-[-1px]"
       )}
     >
       <button
         onClick={() => !isCompleted && completeMutation.mutate()}
         disabled={isCompleted || completeMutation.isPending}
-        className="shrink-0 text-muted-foreground hover:text-primary disabled:cursor-default"
+        className="shrink-0 text-muted-foreground hover:text-primary disabled:cursor-default transition-colors"
         title={isCompleted ? "Completed" : "Mark as completed"}
       >
         {isCompleted ? (

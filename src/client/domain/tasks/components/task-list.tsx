@@ -37,10 +37,10 @@ export function TaskList() {
           <button
             key={status}
             onClick={() => setFilterStatus(status)}
-            className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+            className={`rounded-sm border px-3 py-1 text-xs font-semibold transition-all ${
               filterStatus === status
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-accent"
+                ? "bg-primary text-primary-foreground border-primary shadow-[2px_2px_0px_#1E1E1E]"
+                : "border-border text-muted-foreground hover:border-foreground hover:text-foreground bg-card"
             }`}
           >
             {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -49,9 +49,9 @@ export function TaskList() {
       </div>
 
       {!filteredTasks || filteredTasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-          <ListTodo className="h-12 w-12 mb-2 opacity-50" />
-          <p className="text-sm">No tasks yet</p>
+        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border border-border rounded-sm bg-background">
+          <ListTodo className="h-12 w-12 mb-2 opacity-40" />
+          <p className="text-sm font-medium">No tasks yet</p>
           <p className="text-xs">Use the chat to create tasks</p>
         </div>
       ) : (
