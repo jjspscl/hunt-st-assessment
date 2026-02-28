@@ -11,7 +11,7 @@ export default function TaskDetailPage({
   const { id } = use(params);
 
   return (
-    <div className="flex flex-1 flex-col h-full p-6 max-w-2xl mx-auto w-full">
+    <div className="flex flex-1 flex-col h-full p-3 sm:p-4 md:p-6 max-w-2xl mx-auto w-full">
       <TaskDetailView taskId={id} />
     </div>
   );

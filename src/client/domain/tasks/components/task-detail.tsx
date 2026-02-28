@@ -32,44 +32,44 @@ export function TaskDetailView({ taskId }: TaskDetailViewProps) {
   const isCompleted = task.status === "completed";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Link
         href="/tasks"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground border border-border rounded-sm px-3 py-1.5 bg-card hover:border-foreground transition-colors"
+        className="inline-flex items-center gap-1 text-xs sm:text-sm text-muted-foreground hover:text-foreground border border-border rounded-sm px-2 sm:px-3 py-1 sm:py-1.5 bg-card hover:border-foreground transition-colors"
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         Back to tasks
       </Link>
 
-      <div className="space-y-2 border border-border rounded-sm p-4 bg-card">
-        <div className="flex items-center gap-2">
+      <div className="space-y-2 border border-border rounded-sm p-3 sm:p-4 bg-card">
+        <div className="flex items-start sm:items-center gap-2">
           {isCompleted ? (
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 shrink-0 mt-0.5 sm:mt-0" />
           ) : (
-            <Circle className="h-5 w-5 text-muted-foreground" />
+            <Circle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0 mt-0.5 sm:mt-0" />
           )}
           <h1
             className={cn(
-              "text-xl font-semibold tracking-tight",
+              "text-base sm:text-xl font-semibold tracking-tight break-words",
               isCompleted && "line-through text-muted-foreground"
             )}
           >
             {task.title}
           </h1>
         </div>
-        <p className="text-sm text-muted-foreground flex items-center gap-1">
+        <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
           <Clock className="h-3 w-3" />
           Created {new Date(task.createdAt).toLocaleString()}
         </p>
       </div>
 
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold flex items-center gap-2 tracking-tight">
-          <FileText className="h-4 w-4" />
+      <div className="space-y-2 sm:space-y-3">
+        <h2 className="text-xs sm:text-sm font-semibold flex items-center gap-2 tracking-tight">
+          <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Details ({details.length})
         </h2>
         {details.length === 0 ? (
-          <p className="text-sm text-muted-foreground border border-border rounded-sm p-4 bg-background">
+          <p className="text-xs sm:text-sm text-muted-foreground border border-border rounded-sm p-3 sm:p-4 bg-background">
             No details attached yet. Use the chat to add notes.
           </p>
         ) : (
@@ -77,10 +77,10 @@ export function TaskDetailView({ taskId }: TaskDetailViewProps) {
             {details.map((detail) => (
               <div
                 key={detail.id}
-                className="rounded-sm border border-border p-3 text-sm space-y-1 bg-card"
+                className="rounded-sm border border-border p-2.5 sm:p-3 text-xs sm:text-sm space-y-1 bg-card"
               >
-                <p className="whitespace-pre-wrap">{detail.content}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="whitespace-pre-wrap break-words">{detail.content}</p>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">
                   {new Date(detail.createdAt).toLocaleString()}
                 </p>
               </div>

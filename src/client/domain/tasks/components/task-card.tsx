@@ -39,7 +39,7 @@ export function TaskCard({ task }: TaskCardProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-sm border border-border p-3 transition-colors",
+        "flex items-center gap-2 sm:gap-3 rounded-sm border border-border p-2.5 sm:p-3 transition-colors",
         isCompleted ? "bg-muted/40 opacity-75" : "bg-card hover:shadow-[2px_2px_0px_#1E1E1E] hover:translate-x-[-1px] hover:translate-y-[-1px]"
       )}
     >
@@ -50,9 +50,9 @@ export function TaskCard({ task }: TaskCardProps) {
         title={isCompleted ? "Completed" : "Mark as completed"}
       >
         {isCompleted ? (
-          <CheckCircle2 className="h-5 w-5 text-green-600" />
+          <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
         ) : (
-          <Circle className="h-5 w-5" />
+          <Circle className="h-4 w-4 sm:h-5 sm:w-5" />
         )}
       </button>
       <Link
@@ -61,13 +61,13 @@ export function TaskCard({ task }: TaskCardProps) {
       >
         <p
           className={cn(
-            "text-sm font-medium truncate",
+            "text-xs sm:text-sm font-medium truncate",
             isCompleted && "line-through text-muted-foreground"
           )}
         >
           {task.title}
         </p>
-        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+        <p className="text-[11px] sm:text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
           <Clock className="h-3 w-3" />
           {new Date(task.createdAt).toLocaleDateString()}
         </p>

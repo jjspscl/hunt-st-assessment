@@ -15,8 +15,8 @@ export function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 bg-background">
-      <div className="w-full max-w-sm space-y-6 border border-border rounded-sm bg-card p-8">
+    <div className="flex min-h-screen items-center justify-center p-3 sm:p-4 bg-background">
+      <div className="w-full max-w-sm space-y-5 sm:space-y-6 border border-border rounded-sm bg-card p-5 sm:p-8">
         <div className="text-center space-y-2">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-border bg-muted">
             <Lock className="h-6 w-6 text-primary" />

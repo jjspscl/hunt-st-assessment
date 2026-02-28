@@ -9,7 +9,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <AuthGate>
       <div className="flex min-h-screen flex-col bg-background">
         <Header />
-        <main className="flex-1 container max-w-6xl mx-auto px-6 py-6">
+        <main className="flex-1 container max-w-6xl mx-auto px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6">
           <div className="h-full border border-border rounded-sm bg-card">
             {children}
           </div>
