@@ -46,7 +46,7 @@ Built with Next.js 16, Hono, AI SDK v6, and Cloudflare D1.
 │  └───────────────────┬───────────────────────────────┘  │
 │                      │  Drizzle ORM                     │
 │  ┌───────────────────▼───────────────────────────────┐  │
-│  │  Database: Cloudflare D1 (prod) / SQLite (local)  │  │
+│  │  Database: Cloudflare D1 (prod & local miniflare)  │  │
 │  └───────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────┘
          │
@@ -66,9 +66,9 @@ Built with Next.js 16, Hono, AI SDK v6, and Cloudflare D1.
 | **API** | Hono 4 mounted at `/api/*` via Next.js catch-all route | Routing, CORS, auth middleware, request validation |
 | **Chat domain** | AI SDK v6 `streamText`, OpenRouter provider | LLM streaming, tool dispatch, conversation persistence |
 | **Task domain** | TasksService / DetailsService | CRUD for tasks and free-text details |
-| **Idempotency** | SHA-256 content hash + 5-minute time bucket | Prevents duplicate task creation from repeated messages |
+| **Idempotency** | Client-side dedup (10s) + server SHA-256 hash (10s bucket, 60s TTL) | Two-layer duplicate prevention: client blocks rapid re-sends, server catches network retries |
 | **Auth** | Optional — activated by setting `SECRET_PASSWORD` | Session-cookie auth, rate-limited login attempts |
-| **Database** | Drizzle ORM → Cloudflare D1 (prod) / better-sqlite3 (local) | tasks, task_details, conversations, messages, sessions, idempotency_keys |
+| **Database** | Drizzle ORM → Cloudflare D1 (prod & local via miniflare) | tasks, task_details, conversations, messages, sessions, models, idempotency_keys |
 
 ### Key Files
 
@@ -136,36 +136,46 @@ The LLM autonomously decides which tools to call based on user intent. `streamTe
 
 **Problem:** If the same message is sent twice (network retry, double-click, etc.), it must not create duplicate tasks.
 
-**Solution:** Content-based hashing with a time-bucketed key.
+**Solution:** Two-layer deduplication — client-side blocking + server-side content hashing.
 
-1. **Key generation:** `SHA-256(messageContent + "::" + floor(now / 5min))` — identical messages within a 5-minute window produce the same key
+### Layer 1 — Client-side (instant)
+
+The `useChatStream` hook tracks the last submitted message text and timestamp. If the same text is submitted within **10 seconds**, it is silently rejected before hitting the network. The submit handler also guards on `isLoading`, preventing sends while a response is still streaming.
+
+### Layer 2 — Server-side (content hash)
+
+1. **Key generation:** `SHA-256(chatId + "::" + messageContent + "::" + floor(now / 10s))` — identical messages within the same conversation and 10-second window produce the same key
 2. **Check:** Before processing, the key is looked up in the `idempotency_keys` table
 3. **Cache hit:** Returns the cached LLM response verbatim (no tool calls execute)
-4. **Cache miss:** Processes normally; stores the response with a 24-hour TTL on `onFinish`
-5. **Expiry:** Keys older than 24 hours are cleaned up on lookup, so the same message can be re-processed after a day
+4. **Cache miss:** Processes normally; stores the response with a **60-second TTL** on `onFinish`
+5. **Expiry:** Keys older than 60 seconds are cleaned up on lookup, so the same message can be re-processed shortly after
 
-**Why this works:**
-- The 5-minute bucket handles rapid retries and double-sends while still allowing the user to intentionally repeat a message later
+### Why this works
+
+- **Client layer** catches the most common case (double-click, rapid Enter) with zero latency
+- **Server layer** catches network-level retries and race conditions that bypass the client
+- The **10-second bucket** is short enough that users can intentionally re-send a message after a brief pause
+- The **60-second TTL** prevents unbounded key growth without blocking legitimate repeated messages
+- Chat ID scoping means the same text in different conversations is treated independently
 - SHA-256 ensures collision resistance without storing raw message content
-- The 24h TTL prevents unbounded key growth
 - Keys are stored with `onConflictDoNothing` so concurrent requests are safe
 
-**Verification:**
+### Verification
 
 ```bash
 # pnpm reset clears everything, then try:
 pnpm reset
 
-# Send the same message twice in the chat UI within 5 minutes.
-# The second message will return instantly with "cached: true" and
-# no duplicate tasks will appear in the task list.
+# Send the same message twice in the chat UI within 10 seconds.
+# The second message is blocked client-side — no network request is made
+# and no duplicate tasks appear in the task list.
 
-# Or programmatically:
+# Or programmatically (bypasses client guard, tests server layer):
 curl -X POST http://localhost:3000/api/chat \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"id":"1","role":"user","parts":[{"type":"text","text":"Create a task called Buy milk"}]}]}'
 
-# Send again — same response, no duplicate task
+# Send again within 10 seconds — same response, no duplicate task
 curl -X POST http://localhost:3000/api/chat \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"id":"1","role":"user","parts":[{"type":"text","text":"Create a task called Buy milk"}]}]}'
@@ -181,8 +191,8 @@ curl -X POST http://localhost:3000/api/chat \
 |----------|-----------|
 | **Free LLM tier** (stepfun/step-3.5-flash via OpenRouter) | Zero cost, reliable tool-calling support; trade-off is occasional slower responses |
 | **Full task list in system prompt** | Simple & correct for a small task set (dozens); works because the spec assumes S3 |
-| **5-minute idempotency bucket** | Balances duplicate prevention with user intent to repeat; could be configurable |
-| **SQLite locally, D1 in prod** | Same SQL dialect, zero-config local dev; Drizzle ORM abstracts the difference |
+| **10-second idempotency bucket + 60s TTL** | Short window catches retries without blocking intentional repeats; client-side layer adds zero-latency first line of defense |
+| **D1 everywhere (prod & local via miniflare)** | Single database driver, no native Node module bundling issues; `initOpenNextCloudflareForDev()` provides local D1 bindings |
 | **Session or IP-based chat isolation** | Per-user conversations without requiring accounts; IP fallback for unauthenticated mode |
 | **No websocket — SSE streaming** | AI SDK v6's `toUIMessageStreamResponse` uses SSE; simpler than WebSocket for this use case |
 
@@ -233,7 +243,11 @@ Get a free API key at [openrouter.ai](https://openrouter.ai/).
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The app uses a local SQLite database automatically — no extra setup required.
+Open [http://localhost:3000](http://localhost:3000). The app uses a local Cloudflare D1 database (via miniflare). Apply migrations on first run:
+
+```bash
+npx wrangler d1 migrations apply llm-todo --local
+```
 
 ### 4. Reset System State
 
@@ -274,7 +288,8 @@ Start the app with `pnpm dev` and open [http://localhost:3000](http://localhost:
 2. Type: **"Create a task called Write unit tests"**
 3. Task is created (check the Tasks page — 1 task)
 4. Immediately type the exact same message: **"Create a task called Write unit tests"**
-5. The second response returns instantly (cached) — the Tasks page still shows only 1 task
+5. The message is blocked client-side (within 10s) — the Tasks page still shows only 1 task
+6. Wait 15 seconds and send it again — the server-side idempotency key has also expired, so the LLM processes it fresh
 
 ---
 
