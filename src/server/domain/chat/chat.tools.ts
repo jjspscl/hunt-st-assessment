@@ -69,11 +69,11 @@ export function createChatTools(
 
     attachDetail: tool({
       description:
-        "Attach a free-text note or detail to a specific task. Use when the user wants to add context, notes, or updates to an existing task.",
+        "Attach a free-text note or detail to a single task. Use for adding context, notes, or updates to one existing task.",
       inputSchema: zodSchema(
         z.object({
           taskId: z.string().describe("ID of the task to attach the detail to"),
-          content: z.string().describe("The detail/note content"),
+          content: z.string().describe("The detail/note content — include actionable steps, tips, and guidance"),
         })
       ),
       execute: async ({ taskId, content }) => {
@@ -82,6 +82,43 @@ export function createChatTools(
           success: true,
           detail: { id: detail.id, taskId: detail.taskId },
           message: `Detail attached to task`,
+        };
+      },
+    }),
+
+    attachDetails: tool({
+      description:
+        "Attach notes/details to multiple tasks at once (batch). PREFERRED over calling attachDetail multiple times. Use after creating tasks to add actionable plans to each one.",
+      inputSchema: zodSchema(
+        z.object({
+          items: z
+            .array(
+              z.object({
+                taskId: z.string().describe("ID of the task"),
+                content: z
+                  .string()
+                  .describe(
+                    "Detailed, actionable plan for this task — include concrete steps, tips, and practical guidance"
+                  ),
+              })
+            )
+            .describe("Array of task details to attach"),
+        })
+      ),
+      execute: async ({ items }) => {
+        const results = [];
+        for (const item of items) {
+          const detail = await detailsService.attachDetail(
+            item.taskId,
+            item.content
+          );
+          results.push({ id: detail.id, taskId: detail.taskId });
+        }
+        return {
+          success: true,
+          attached: results.length,
+          details: results,
+          message: `Attached details to ${results.length} task(s)`,
         };
       },
     }),

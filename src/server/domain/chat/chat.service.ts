@@ -73,7 +73,7 @@ export class ChatService {
       messages: modelMessages,
       tools,
       maxRetries: 3,
-      stopWhen: stepCountIs(5),
+      stopWhen: stepCountIs(10),
       onFinish: async ({ text }) => {
         if (text) {
           await this.chatRepo.saveMessage(
