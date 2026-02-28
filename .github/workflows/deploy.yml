@@ -30,7 +30,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build with @cloudflare/next-on-pages
-        run: npx @cloudflare/next-on-pages
+        run: pnpm run build:cf
         env:
           NODE_ENV: production
 
