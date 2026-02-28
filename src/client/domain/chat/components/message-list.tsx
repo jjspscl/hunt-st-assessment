@@ -1,52 +1,11 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import type { UIMessage } from "ai";
 import { cn } from "@/lib/utils";
-import { User, Bot, Loader2, ExternalLink } from "lucide-react";
-import Link from "next/link";
+import { User, Bot, Loader2 } from "lucide-react";
 import { ReasoningBlock } from "./reasoning-block";
-
-/**
- * Parse markdown-style links [text](url) into React elements.
- * Links to /tasks/* open in new tabs.
- */
-function renderTextWithLinks(text: string): ReactNode[] {
-  const linkRegex = /\[([^\]]+)\]\((\/[^)]+)\)/g;
-  const parts: ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = linkRegex.exec(text)) !== null) {
-    // Text before the link
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-
-    const [, linkText, href] = match;
-    parts.push(
-      <Link
-        key={`${href}-${match.index}`}
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-0.5 text-primary underline underline-offset-2 decoration-primary/40 hover:decoration-primary font-medium transition-colors"
-      >
-        {linkText}
-        <ExternalLink className="h-3 w-3 shrink-0" />
-      </Link>
-    );
-
-    lastIndex = match.index + match[0].length;
-  }
-
-  // Remaining text after last link
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-
-  return parts.length > 0 ? parts : [text];
-}
+import { Markdown } from "@/client/components/markdown";
 
 interface MessageListProps {
   messages: UIMessage[];
@@ -118,13 +77,23 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
               const isStreaming = reasoningParts.some((p) => p.state === "streaming");
               return <ReasoningBlock text={combinedText} isStreaming={isStreaming} />;
             })()}
-            <div className="whitespace-pre-wrap">
-              {message.parts
-                ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
-                .map((p, i) => (
-                  <span key={i}>{renderTextWithLinks(p.text)}</span>
-                ))}
-            </div>
+            {message.role === "user" ? (
+              <div className="whitespace-pre-wrap">
+                {message.parts
+                  ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
+                  .map((p, i) => (
+                    <span key={i}>{p.text}</span>
+                  ))}
+              </div>
+            ) : (
+              <div>
+                {message.parts
+                  ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
+                  .map((p, i) => (
+                    <Markdown key={i}>{p.text}</Markdown>
+                  ))}
+              </div>
+            )}
           </div>
         </div>
       ))}

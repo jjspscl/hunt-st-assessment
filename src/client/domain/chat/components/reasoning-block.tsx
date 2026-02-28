@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Brain, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Markdown } from "@/client/components/markdown";
 
 interface ReasoningBlockProps {
   /** The combined reasoning text */
@@ -69,14 +70,14 @@ export function ReasoningBlock({ text, isStreaming }: ReasoningBlockProps) {
             ref={contentRef}
             className={cn(
               "mt-1.5 pl-2 border-l-2 text-[10px] sm:text-xs leading-relaxed",
-              "text-muted-foreground/60 whitespace-pre-wrap",
+              "text-muted-foreground/60",
               "max-h-40 overflow-y-auto",
               isStreaming
                 ? "border-primary/40"
                 : "border-border"
             )}
           >
-            {text}
+            <Markdown compact>{text}</Markdown>
           </div>
         </div>
       </div>
