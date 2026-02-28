@@ -49,6 +49,7 @@ export class ModelsRepository {
       maxCompletionTokens: number | null;
       description: string | null;
       sortOrder: number;
+      isThinking: boolean;
     }>
   ) {
     const now = new Date().toISOString();
@@ -71,6 +72,7 @@ export class ModelsRepository {
             maxCompletionTokens: entry.maxCompletionTokens,
             description: entry.description,
             sortOrder: entry.sortOrder,
+            isThinking: entry.isThinking,
             updatedAt: now,
           })
           .where(eq(models.id, entry.id))

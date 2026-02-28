@@ -66,6 +66,7 @@ chatRouter.post("/", async (c) => {
 
   // Return AI SDK v6 UIMessage stream response with persistence via onFinish
   const response = result.result.toUIMessageStreamResponse({
+    sendReasoning: true,
     originalMessages: result.originalMessages,
     onFinish: async ({ messages: finalMessages }) => {
       // Persist the full UIMessage[] conversation snapshot for this user

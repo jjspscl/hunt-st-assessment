@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Cpu, RefreshCw } from "lucide-react";
+import { ChevronDown, Cpu, RefreshCw, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useModels, useSetActiveModel, useSyncModels } from "../hooks/use-models";
 import { toast } from "sonner";
@@ -91,6 +91,9 @@ export function ModelSelector() {
         <span className="truncate hidden xs:inline sm:inline">
           {activeModel ? shortName(activeModel.id) : "Model"}
         </span>
+        {activeModel?.isThinking && (
+          <Brain className="h-3 w-3 shrink-0 text-primary/70" />
+        )}
         <ChevronDown
           className={cn("h-3 w-3 shrink-0 transition-transform", isOpen && "rotate-180")}
         />
@@ -158,6 +161,9 @@ export function ModelSelector() {
                         )}
                       />
                       <span className="font-medium truncate">{shortName(model.id)}</span>
+                      {model.isThinking && (
+                        <Brain className="h-3 w-3 shrink-0 text-primary/70" />
+                      )}
                       <span className="ml-auto text-xs text-muted-foreground shrink-0">
                         {(model.contextLength / 1024).toFixed(0)}k ctx
                       </span>

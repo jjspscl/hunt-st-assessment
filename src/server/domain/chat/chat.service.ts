@@ -75,7 +75,8 @@ export class ChatService {
 
     // Stream response — use active model from DB
     const activeModelId = await this.modelsService.getActiveModelId();
-    const model = createLlmClient(this.apiKey, activeModelId);
+    const isThinking = await this.modelsService.isActiveModelThinking();
+    const model = createLlmClient(this.apiKey, activeModelId, isThinking);
 
     const chatRepo = this.chatRepo;
     const db = this.db;

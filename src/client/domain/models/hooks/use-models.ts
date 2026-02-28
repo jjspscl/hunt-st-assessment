@@ -9,6 +9,7 @@ export interface Model {
   maxCompletionTokens: number | null;
   description: string | null;
   isDefault: boolean;
+  isThinking: boolean;
   sortOrder: number;
   status: "untested" | "ok" | "error";
 }

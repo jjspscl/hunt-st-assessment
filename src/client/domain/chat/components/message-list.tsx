@@ -5,6 +5,7 @@ import type { UIMessage } from "ai";
 import { cn } from "@/lib/utils";
 import { User, Bot, Loader2, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { ReasoningBlock } from "./reasoning-block";
 
 /**
  * Parse markdown-style links [text](url) into React elements.
@@ -107,6 +108,16 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
                 : "bg-card border-border"
             )}
           >
+            {/* Reasoning block for assistant messages with thinking parts */}
+            {message.role === "assistant" && (() => {
+              const reasoningParts = message.parts?.filter(
+                (p): p is Extract<typeof p, { type: "reasoning" }> => p.type === "reasoning"
+              ) ?? [];
+              if (reasoningParts.length === 0) return null;
+              const combinedText = reasoningParts.map((p) => p.text).join("");
+              const isStreaming = reasoningParts.some((p) => p.state === "streaming");
+              return <ReasoningBlock text={combinedText} isStreaming={isStreaming} />;
+            })()}
             <div className="whitespace-pre-wrap">
               {message.parts
                 ?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")

@@ -22,6 +22,17 @@ interface OpenRouterModel {
 }
 
 /**
+ * Detect whether a model supports reasoning/thinking.
+ * Checks the OpenRouter `supported_parameters` for `reasoning`,
+ * and also checks for known "thinking" model name patterns.
+ */
+function isThinkingModel(model: OpenRouterModel): boolean {
+  const supportsReasoning = model.supported_parameters?.includes("reasoning");
+  const hasThinkingName = /thinking|think/i.test(model.id);
+  return supportsReasoning || hasThinkingName;
+}
+
+/**
  * Quality ranking for known free models on OpenRouter.
  * Based on the OpenRouter leaderboard, community benchmarks,
  * and real-world tool-calling reliability (as of early 2026).
@@ -132,6 +143,12 @@ export class ModelsService {
     return row?.id ?? DEFAULT_MODEL_ID;
   }
 
+  /** Check if the active model supports reasoning/thinking */
+  async isActiveModelThinking(): Promise<boolean> {
+    const row = await this.repo.getDefault();
+    return row?.isThinking ?? false;
+  }
+
   /** Set a model as the active/default */
   async setActive(modelId: string) {
     return this.repo.setDefault(modelId);
@@ -170,6 +187,7 @@ export class ModelsService {
       maxCompletionTokens: m.top_provider?.max_completion_tokens ?? null,
       description: m.description?.slice(0, 500) ?? null,
       sortOrder: computeSortOrder(m.id, m.context_length),
+      isThinking: isThinkingModel(m),
     }));
 
     // Upsert all candidates first (so we have them in DB)
@@ -207,6 +225,7 @@ export class ModelsService {
             maxCompletionTokens: defaultModel.top_provider?.max_completion_tokens ?? null,
             description: defaultModel.description?.slice(0, 500) ?? null,
             sortOrder: computeSortOrder(DEFAULT_MODEL_ID, defaultModel.context_length),
+            isThinking: isThinkingModel(defaultModel),
           },
         ]);
       }

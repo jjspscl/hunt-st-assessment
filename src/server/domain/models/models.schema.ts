@@ -8,6 +8,7 @@ export const models = sqliteTable("models", {
   maxCompletionTokens: integer("max_completion_tokens"),
   description: text("description"),
   isDefault: integer("is_default", { mode: "boolean" }).notNull().default(false),
+  isThinking: integer("is_thinking", { mode: "boolean" }).notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(999),  // lower = better quality
   status: text("status", { enum: ["untested", "ok", "error"] })
     .notNull()
