@@ -1,4 +1,5 @@
 import type { Context } from "hono";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 /**
  * Minimal D1Database type for Cloudflare Workers.
@@ -22,15 +23,13 @@ export interface Env {
 }
 
 /**
- * Get Cloudflare Pages request context (bindings & env).
- * Returns undefined when running outside Cloudflare Pages (local dev).
+ * Get Cloudflare context (bindings & env) via @opennextjs/cloudflare.
+ * Returns undefined in environments where it's not available.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getCfEnv(): Record<string, any> | undefined {
   try {
-    // @cloudflare/next-on-pages provides runtime bindings via getRequestContext()
-    const { getRequestContext } = require("@cloudflare/next-on-pages");
-    return getRequestContext()?.env;
+    return getCloudflareContext().env as Record<string, unknown>;
   } catch {
     return undefined;
   }
@@ -38,10 +37,10 @@ function getCfEnv(): Record<string, any> | undefined {
 
 /**
  * Safely read an env var.
- * Priority: Cloudflare Pages context → c.env (Hono) → process.env (local dev).
+ * Priority: Cloudflare context → c.env (Hono) → process.env (local dev).
  */
 function readVar(c: Context, key: string): string | undefined {
-  // 1. Cloudflare Pages runtime bindings
+  // 1. OpenNext Cloudflare context (D1/KV/secrets/vars)
   const cfEnv = getCfEnv();
   if (cfEnv) {
     const val = cfEnv[key];
@@ -73,10 +72,10 @@ export function getOpenRouterApiKey(c: Context): string {
 
 /**
  * Get the raw D1 binding. Returns undefined in local dev.
- * Checks Cloudflare Pages context first, then Hono c.env.
+ * Checks OpenNext Cloudflare context first, then Hono c.env.
  */
 export function getD1Binding(c: Context): D1Database | undefined {
-  // 1. Cloudflare Pages runtime context
+  // 1. OpenNext Cloudflare context
   const cfEnv = getCfEnv();
   if (cfEnv?.DB && typeof cfEnv.DB === "object" && typeof cfEnv.DB.prepare === "function") {
     return cfEnv.DB as D1Database;

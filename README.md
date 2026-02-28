@@ -283,7 +283,7 @@ Start the app with `pnpm dev` and open [http://localhost:3000](http://localhost:
 | Command | Description |
 |---------|-------------|
 | `pnpm dev` | Start local dev server (Turbopack) |
-| `pnpm build` | Build for Cloudflare Pages |
+| `pnpm build` | Build for Cloudflare Workers (via OpenNext) |
 | `pnpm reset` | Reset all data to clean slate |
 | `pnpm lint` | Run ESLint |
 | `pnpm test` | Run all vitest tests |

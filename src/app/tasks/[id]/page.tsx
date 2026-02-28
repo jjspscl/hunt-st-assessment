@@ -1,7 +1,5 @@
 "use client";
 
-export const runtime = "edge";
-
 import { use } from "react";
 import { TaskDetailView } from "@/client/domain/tasks/components/task-detail";
 

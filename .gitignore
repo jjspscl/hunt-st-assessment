@@ -40,6 +40,9 @@ yarn-error.log*
 # wrangler
 .wrangler/
 
+# OpenNext build output
+.open-next/
+
 # local dev database
 .local.sqlite
 

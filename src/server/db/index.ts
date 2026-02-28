@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { drizzle as drizzleD1 } from "drizzle-orm/d1";
 import * as schema from "./schema";
-import { getD1Binding, type Env } from "../env";
+import { getD1Binding } from "../env";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createDb(binding: any) {
@@ -11,8 +11,8 @@ export function createDb(binding: any) {
 
 /**
  * Get a Drizzle DB instance from the request context.
- * - On Cloudflare Workers: uses the D1 binding from c.env.DB
- * - On local `next dev` (Node.js): uses better-sqlite3 via dynamic import
+ * - On Cloudflare (via OpenNext): uses the D1 binding from getCloudflareContext()
+ * - On local `next dev` (Node.js): uses better-sqlite3 via dynamic require
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _localDb: any = null;
@@ -25,26 +25,27 @@ export function getDb(c: Context): any {
     return drizzleD1(d1, { schema });
   }
 
-  // Edge runtime — no D1 binding means something is misconfigured
+  // Not on Cloudflare and not on Node.js — misconfigured
   if (typeof globalThis.process === "undefined" || !globalThis.process?.versions?.node) {
     throw new Error(
-      "D1 binding not found. Ensure the D1 database is bound in Cloudflare Pages settings (binding name: DB)."
+      "D1 binding not found. Ensure the D1 database is bound in wrangler.jsonc (binding name: DB)."
     );
   }
 
-  // Local dev: use better-sqlite3
+  // Local dev (Node.js only): lazy-load better-sqlite3
   if (!_localDb) {
-    // Dynamic require for better-sqlite3 (only available in Node.js)
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Database = require("better-sqlite3");
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const path = require("path");
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { drizzle: drizzleSqlite } = require("drizzle-orm/better-sqlite3");
 
     const dbPath = path.join(process.cwd(), ".local.sqlite");
     const sqlite = new Database(dbPath);
     sqlite.pragma("journal_mode = WAL");
 
-    // Auto-create tables on first use (matching Drizzle schemas exactly)
+    // Auto-create tables on first use
     sqlite.exec(`
       CREATE TABLE IF NOT EXISTS tasks (
         id TEXT PRIMARY KEY NOT NULL,
