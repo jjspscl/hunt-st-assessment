@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { MessageSquare, ListTodo, LogOut, Github } from "lucide-react";
 import { useAuthStatus, useLogout } from "@/client/domain/auth/hooks/use-auth";
-import { ModelSelector } from "@/client/domain/models/components/model-selector";
 
 export function Header() {
   const pathname = usePathname();
@@ -19,10 +18,10 @@ export function Header() {
 
   return (
     <header className="border-b border-border bg-card">
-      <div className="container max-w-6xl mx-auto flex h-12 sm:h-14 items-center px-3 sm:px-4 md:px-6 gap-2 sm:gap-4 md:gap-6">
-        <Link href="/chat" className="font-semibold text-base sm:text-lg tracking-tight mr-1 sm:mr-4 shrink-0">
-          <span className="hidden sm:inline">Task Tracker</span>
-          <span className="sm:hidden">Tracker</span>
+      <div className="container max-w-6xl mx-auto flex h-11 sm:h-14 items-center px-2 sm:px-4 md:px-6 gap-1.5 sm:gap-4 md:gap-6">
+        <Link href="/chat" className="font-semibold text-sm sm:text-lg tracking-tight mr-0.5 sm:mr-4 shrink-0">
+          <span className="hidden sm:inline">Tracker</span>
+          <span className="sm:hidden text-base">Tracker</span>
         </Link>
         <nav className="flex items-center gap-1">
           {navItems.map((item) => {
@@ -46,7 +45,6 @@ export function Header() {
           })}
         </nav>
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          <ModelSelector />
           <a
             href="https://github.com/jjspscl/llm-todo"
             target="_blank"

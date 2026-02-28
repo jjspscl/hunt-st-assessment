@@ -9,7 +9,7 @@ export function ChatPanel() {
     useChatStream();
 
   return (
-    <div className="flex flex-col h-full min-h-[calc(100vh-8rem)] sm:min-h-[calc(100vh-9rem)] md:min-h-[calc(100vh-10rem)]">
+    <div className="flex flex-col flex-1 min-h-0">
       <MessageList messages={messages} isLoading={isLoading} />
       <MessageInput
         input={input}

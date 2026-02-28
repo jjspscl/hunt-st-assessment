@@ -63,6 +63,12 @@ body {
   }
 }
 
+/* Prevent iOS rubber-band on the app shell, allow inner scroll */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
 * {
   border-color: var(--border);
 }
