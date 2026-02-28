@@ -35,7 +35,8 @@ jobs:
           NODE_ENV: production
 
       - name: Inject D1 database ID into wrangler.jsonc
-        run: sed -i 's/"database_id": "placeholder"/"database_id": "'"$D1_DATABASE_ID"'"/' wrangler.jsonc
+        run: |
+          sed -i "s/\"database_id\": \"placeholder\"/\"database_id\": \"$D1_DATABASE_ID\"/" wrangler.jsonc
         env:
           D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
 
