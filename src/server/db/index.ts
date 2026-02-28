@@ -58,6 +58,11 @@ export function getDb(c: Context): any {
         content TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
+      CREATE TABLE IF NOT EXISTS conversations (
+        id TEXT PRIMARY KEY NOT NULL,
+        messages_json TEXT NOT NULL DEFAULT '[]',
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
       CREATE TABLE IF NOT EXISTS sessions (
         token TEXT PRIMARY KEY NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),

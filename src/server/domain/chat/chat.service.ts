@@ -30,7 +30,12 @@ export class ChatService {
     this.detailsService = new DetailsService(new DetailsRepository(db));
   }
 
-  async processMessages(uiMessages: UIMessage[]) {
+  /** Load persisted conversation history for a specific user/session. */
+  async loadConversation(chatId: string): Promise<UIMessage[]> {
+    return this.chatRepo.loadConversation(chatId);
+  }
+
+  async processMessages(uiMessages: UIMessage[], chatId: string) {
     // Extract latest user message for idempotency + persistence
     const lastMsg = uiMessages[uiMessages.length - 1];
     const userText = lastMsg?.role === "user"
@@ -49,7 +54,7 @@ export class ChatService {
       };
     }
 
-    // Persist user message
+    // Persist user message (legacy row store)
     if (userText) {
       await this.chatRepo.saveMessage(crypto.randomUUID(), "user", userText);
     }
@@ -67,6 +72,9 @@ export class ChatService {
     // Stream response
     const model = createLlmClient(this.apiKey);
 
+    const chatRepo = this.chatRepo;
+    const db = this.db;
+
     const result = streamText({
       model,
       system: systemPrompt,
@@ -76,16 +84,22 @@ export class ChatService {
       stopWhen: stepCountIs(10),
       onFinish: async ({ text }) => {
         if (text) {
-          await this.chatRepo.saveMessage(
+          await chatRepo.saveMessage(
             crypto.randomUUID(),
             "assistant",
             text
           );
-          await storeIdempotencyKey(this.db, idempotencyKey, text);
+          await storeIdempotencyKey(db, idempotencyKey, text);
         }
       },
     });
 
-    return { type: "stream" as const, result, idempotencyKey };
+    return {
+      type: "stream" as const,
+      result,
+      idempotencyKey,
+      originalMessages: uiMessages,
+      chatRepo,
+    };
   }
 }
