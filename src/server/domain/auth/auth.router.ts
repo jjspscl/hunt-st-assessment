@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import type { Env } from "../../env";
-import { createDb } from "../../db";
+import { getSecretPassword } from "../../env";
+import { getDb } from "../../db";
 import { AuthRepository } from "./auth.repository";
 import { AuthService } from "./auth.service";
 import { loginRequestSchema } from "@/shared/types";
@@ -18,7 +19,7 @@ function getIp(c: { req: { header: (name: string) => string | undefined } }): st
 
 // GET /api/auth/status
 authRouter.get("/status", async (c) => {
-  const authRequired = !!c.env.SECRET_PASSWORD;
+  const authRequired = !!getSecretPassword(c);
 
   if (!authRequired) {
     return c.json({ authRequired: false, authenticated: true });
@@ -29,7 +30,7 @@ authRouter.get("/status", async (c) => {
     return c.json({ authRequired: true, authenticated: false });
   }
 
-  const db = createDb(c.env.DB);
+  const db = getDb(c);
   const service = new AuthService(new AuthRepository(db));
   const valid = await service.validateSession(sessionToken);
 
@@ -38,7 +39,7 @@ authRouter.get("/status", async (c) => {
 
 // POST /api/auth/login
 authRouter.post("/login", async (c) => {
-  const secretPassword = c.env.SECRET_PASSWORD;
+  const secretPassword = getSecretPassword(c);
   if (!secretPassword) {
     return c.json({ success: true }); // No auth required
   }
@@ -50,7 +51,7 @@ authRouter.post("/login", async (c) => {
   }
 
   const ip = getIp(c);
-  const db = createDb(c.env.DB);
+  const db = getDb(c);
   const service = new AuthService(new AuthRepository(db));
 
   const result = await service.login(parsed.data.password, secretPassword, ip);
@@ -75,7 +76,7 @@ authRouter.post("/logout", async (c) => {
   const sessionToken = getCookie(c, "session");
 
   if (sessionToken) {
-    const db = createDb(c.env.DB);
+    const db = getDb(c);
     const service = new AuthService(new AuthRepository(db));
     await service.logout(sessionToken);
   }

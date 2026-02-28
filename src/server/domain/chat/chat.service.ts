@@ -1,4 +1,9 @@
-import { streamText, type CoreMessage } from "ai";
+import {
+  streamText,
+  stepCountIs,
+  convertToModelMessages,
+  type UIMessage,
+} from "ai";
 import { createLlmClient } from "../../lib/llm";
 import { createChatTools } from "./chat.tools";
 import { buildSystemPrompt } from "./chat.prompts";
@@ -25,9 +30,15 @@ export class ChatService {
     this.detailsService = new DetailsService(new DetailsRepository(db));
   }
 
-  async processMessage(userMessage: string) {
-    // Check idempotency
-    const idempotencyKey = await generateIdempotencyKey(userMessage);
+  async processMessages(uiMessages: UIMessage[]) {
+    // Extract latest user message for idempotency + persistence
+    const lastMsg = uiMessages[uiMessages.length - 1];
+    const userText = lastMsg?.role === "user"
+      ? lastMsg.parts?.filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text").map((p) => p.text).join("") ?? ""
+      : "";
+
+    // Idempotency check
+    const idempotencyKey = await generateIdempotencyKey(userText);
     const cachedResponse = await checkIdempotencyKey(this.db, idempotencyKey);
 
     if (cachedResponse) {
@@ -38,19 +49,17 @@ export class ChatService {
       };
     }
 
-    // Save user message
-    await this.chatRepo.saveMessage(crypto.randomUUID(), "user", userMessage);
+    // Persist user message
+    if (userText) {
+      await this.chatRepo.saveMessage(crypto.randomUUID(), "user", userText);
+    }
 
     // Build context
     const tasks = await this.tasksService.listTasks();
     const systemPrompt = buildSystemPrompt(tasks);
-    const recentMessages = await this.chatRepo.getRecentMessages(50);
 
-    // Build messages array for AI SDK
-    const aiMessages: CoreMessage[] = recentMessages.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }));
+    // Convert UIMessages → ModelMessages (async in AI SDK v6)
+    const modelMessages = await convertToModelMessages(uiMessages);
 
     // Create tools
     const tools = createChatTools(this.tasksService, this.detailsService);
@@ -61,18 +70,17 @@ export class ChatService {
     const result = streamText({
       model,
       system: systemPrompt,
-      messages: aiMessages,
+      messages: modelMessages,
       tools,
-      maxSteps: 5,
+      maxRetries: 3,
+      stopWhen: stepCountIs(5),
       onFinish: async ({ text }) => {
         if (text) {
-          // Save assistant message
           await this.chatRepo.saveMessage(
             crypto.randomUUID(),
             "assistant",
             text
           );
-          // Store idempotency key
           await storeIdempotencyKey(this.db, idempotencyKey, text);
         }
       },

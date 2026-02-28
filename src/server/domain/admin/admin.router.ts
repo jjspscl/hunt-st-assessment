@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { Env } from "../../env";
-import { createDb } from "../../db";
+import { getDb } from "../../db";
 import { TasksRepository } from "../tasks/tasks.repository";
 import { DetailsRepository } from "../details/details.repository";
 import { ChatRepository } from "../chat/chat.repository";
@@ -11,7 +11,7 @@ export const adminRouter = new Hono<{ Bindings: Env }>();
 
 // POST /api/admin/reset
 adminRouter.post("/reset", async (c) => {
-  const db = createDb(c.env.DB);
+  const db = getDb(c);
 
   // Clear all tables — order matters due to FK-like dependencies
   const detailsRepo = new DetailsRepository(db);

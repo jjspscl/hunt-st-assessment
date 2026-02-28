@@ -1,7 +1,6 @@
-import { eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { messages } from "./chat.schema";
 import type { Database } from "../../db";
-import { desc } from "drizzle-orm";
 
 export class ChatRepository {
   constructor(private db: Database) {}

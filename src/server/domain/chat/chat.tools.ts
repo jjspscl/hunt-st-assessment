@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { tool } from "ai";
+import { tool, zodSchema } from "ai";
 import { TasksService } from "../tasks/tasks.service";
 import { DetailsService } from "../details/details.service";
 
@@ -11,15 +11,17 @@ export function createChatTools(
     createTasks: tool({
       description:
         "Create one or more new tasks from the user's message. Use when the user wants to add new tasks.",
-      parameters: z.object({
-        tasks: z
-          .array(
-            z.object({
-              title: z.string().describe("Concise task title"),
-            })
-          )
-          .describe("Array of tasks to create"),
-      }),
+      inputSchema: zodSchema(
+        z.object({
+          tasks: z
+            .array(
+              z.object({
+                title: z.string().describe("Concise task title"),
+              })
+            )
+            .describe("Array of tasks to create"),
+        })
+      ),
       execute: async ({ tasks }) => {
         const created = await tasksService.createMultipleTasks(
           tasks.map((t) => t.title)
@@ -38,11 +40,13 @@ export function createChatTools(
     completeTasks: tool({
       description:
         "Mark one or more tasks as completed. Use when the user indicates tasks are done.",
-      parameters: z.object({
-        taskIds: z
-          .array(z.string())
-          .describe("IDs of tasks to mark as completed"),
-      }),
+      inputSchema: zodSchema(
+        z.object({
+          taskIds: z
+            .array(z.string())
+            .describe("IDs of tasks to mark as completed"),
+        })
+      ),
       execute: async ({ taskIds }) => {
         const completed = [];
         const notFound = [];
@@ -66,10 +70,12 @@ export function createChatTools(
     attachDetail: tool({
       description:
         "Attach a free-text note or detail to a specific task. Use when the user wants to add context, notes, or updates to an existing task.",
-      parameters: z.object({
-        taskId: z.string().describe("ID of the task to attach the detail to"),
-        content: z.string().describe("The detail/note content"),
-      }),
+      inputSchema: zodSchema(
+        z.object({
+          taskId: z.string().describe("ID of the task to attach the detail to"),
+          content: z.string().describe("The detail/note content"),
+        })
+      ),
       execute: async ({ taskId, content }) => {
         const detail = await detailsService.attachDetail(taskId, content);
         return {

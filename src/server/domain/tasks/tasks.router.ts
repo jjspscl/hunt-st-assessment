@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { Env } from "../../env";
-import { createDb } from "../../db";
+import { getDb } from "../../db";
 import { TasksRepository } from "./tasks.repository";
 import { TasksService } from "./tasks.service";
 import { DetailsRepository } from "../details/details.repository";
@@ -10,7 +10,7 @@ export const tasksRouter = new Hono<{ Bindings: Env }>();
 
 // GET /api/tasks
 tasksRouter.get("/", async (c) => {
-  const db = createDb(c.env.DB);
+  const db = getDb(c);
   const service = new TasksService(new TasksRepository(db));
   const tasks = await service.listTasks();
   return c.json({ tasks });
@@ -18,7 +18,7 @@ tasksRouter.get("/", async (c) => {
 
 // GET /api/tasks/:id
 tasksRouter.get("/:id", async (c) => {
-  const db = createDb(c.env.DB);
+  const db = getDb(c);
   const taskService = new TasksService(new TasksRepository(db));
   const detailsService = new DetailsService(new DetailsRepository(db));
 
@@ -33,7 +33,7 @@ tasksRouter.get("/:id", async (c) => {
 
 // PATCH /api/tasks/:id
 tasksRouter.patch("/:id", async (c) => {
-  const db = createDb(c.env.DB);
+  const db = getDb(c);
   const service = new TasksService(new TasksRepository(db));
   const body = await c.req.json();
 

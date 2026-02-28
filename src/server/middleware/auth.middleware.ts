@@ -1,13 +1,14 @@
 import { createMiddleware } from "hono/factory";
 import { getCookie } from "hono/cookie";
 import type { Env } from "../env";
-import { createDb } from "../db";
+import { getSecretPassword } from "../env";
+import { getDb } from "../db";
 import { sessions } from "../db/schema";
-import { eq, gt } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export const authMiddleware = createMiddleware<{ Bindings: Env }>(
   async (c, next) => {
-    const secretPassword = c.env.SECRET_PASSWORD;
+    const secretPassword = getSecretPassword(c);
 
     // No password configured → public mode, skip auth
     if (!secretPassword) {
@@ -30,7 +31,7 @@ export const authMiddleware = createMiddleware<{ Bindings: Env }>(
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const db = createDb(c.env.DB);
+    const db = getDb(c);
     const now = new Date().toISOString();
 
     const [session] = await db
