@@ -47,7 +47,7 @@ export class ChatService {
       : "";
 
     // Idempotency check
-    const idempotencyKey = await generateIdempotencyKey(userText);
+    const idempotencyKey = await generateIdempotencyKey(userText, chatId);
     const cachedResponse = await checkIdempotencyKey(this.db, idempotencyKey);
 
     if (cachedResponse) {

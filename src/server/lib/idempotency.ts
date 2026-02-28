@@ -4,11 +4,16 @@ import type { Database } from "../db";
 
 /**
  * Generate an idempotency key from message content.
- * Uses SHA-256 hash of content + 5-minute timestamp bucket.
+ * Uses SHA-256 hash of content + chatId + short timestamp bucket.
+ * The 10-second bucket prevents rapid double-submits while allowing
+ * the user to intentionally re-send the same message after a brief pause.
  */
-export async function generateIdempotencyKey(content: string): Promise<string> {
-  const bucket = Math.floor(Date.now() / (5 * 60 * 1000)); // 5-min buckets
-  const raw = `${content}::${bucket}`;
+export async function generateIdempotencyKey(
+  content: string,
+  chatId?: string
+): Promise<string> {
+  const bucket = Math.floor(Date.now() / (10 * 1000)); // 10-second buckets
+  const raw = `${chatId ?? "global"}::${content}::${bucket}`;
   const encoder = new TextEncoder();
   const data = encoder.encode(raw);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
@@ -50,7 +55,7 @@ export async function storeIdempotencyKey(
   response: string
 ): Promise<void> {
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24h TTL
+  const expiresAt = new Date(now.getTime() + 60 * 1000); // 60-second TTL
 
   await db
     .insert(idempotencyKeys)
