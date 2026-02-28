@@ -5,6 +5,23 @@ import { CheckCircle2, Circle, Clock, FileText, Loader2, ArrowLeft } from "lucid
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+/**
+ * Format detail content for display.
+ * Detects inline numbered lists (e.g. "1) ... 2) ...") and adds line breaks.
+ * Also handles "- " bullet patterns and "Step N:" patterns.
+ */
+function formatDetailContent(content: string): string {
+  // Add newlines before numbered items like "2)", "3)", etc. (skip "1)" at start)
+  let formatted = content.replace(/(?<!\n)\s+(\d+)\)\s/g, "\n$1) ");
+  // Handle "Step N:" patterns
+  formatted = formatted.replace(/(?<!\n)\s+(Step\s+\d+[:.]\s)/gi, "\n$1");
+  // Handle bullet points mid-text
+  formatted = formatted.replace(/(?<!\n)\s+([-•])\s+(?=[A-Z])/g, "\n$1 ");
+  // Handle "Pro tip:" or "Note:" at the end
+  formatted = formatted.replace(/(?<!\n)\s+(Pro tip:|Note:|Tip:|Important:)\s/gi, "\n\n$1 ");
+  return formatted.trim();
+}
+
 interface TaskDetailViewProps {
   taskId: string;
 }
@@ -77,9 +94,9 @@ export function TaskDetailView({ taskId }: TaskDetailViewProps) {
             {details.map((detail) => (
               <div
                 key={detail.id}
-                className="rounded-sm border border-border p-2.5 sm:p-3 text-xs sm:text-sm space-y-1 bg-card"
+                className="rounded-sm border border-border p-2.5 sm:p-3 text-xs sm:text-sm space-y-1.5 bg-card"
               >
-                <p className="whitespace-pre-wrap break-words">{detail.content}</p>
+                <p className="whitespace-pre-wrap break-words leading-relaxed">{formatDetailContent(detail.content)}</p>
                 <p className="text-[11px] sm:text-xs text-muted-foreground">
                   {new Date(detail.createdAt).toLocaleString()}
                 </p>
