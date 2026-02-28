@@ -40,37 +40,46 @@ authRouter.get("/status", async (c) => {
 
 // POST /api/auth/login
 authRouter.post("/login", async (c) => {
-  const secretPassword = getSecretPassword(c);
-  if (!secretPassword) {
-    return c.json({ success: true }); // No auth required
+  try {
+    const secretPassword = getSecretPassword(c);
+    if (!secretPassword) {
+      return c.json({ success: true }); // No auth required
+    }
+
+    const body = await c.req.json();
+    const parsed = loginRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ error: "Password is required", code: ErrorCode.AUTH_PASSWORD_REQUIRED }, 400);
+    }
+
+    const ip = getIp(c);
+    console.log("[auth/login] IP:", ip, "— getting DB...");
+    const db = getDb(c);
+    console.log("[auth/login] DB obtained, creating service...");
+    const service = new AuthService(new AuthRepository(db));
+
+    const result = await service.login(parsed.data.password, secretPassword, ip);
+    console.log("[auth/login] login result:", JSON.stringify(result));
+
+    if ("error" in result) {
+      const code = result.status === 429 ? ErrorCode.AUTH_RATE_LIMITED : ErrorCode.AUTH_INVALID_CREDENTIALS;
+      return c.json({ error: result.error, code }, result.status);
+    }
+
+    setCookie(c, "session", result.token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+      path: "/",
+      maxAge: 60 * 60 * 24, // 24 hours
+    });
+
+    return c.json({ success: true });
+  } catch (err) {
+    console.error("[auth/login] UNHANDLED ERROR:", err instanceof Error ? err.message : String(err));
+    console.error("[auth/login] Stack:", err instanceof Error ? err.stack : "no stack");
+    return c.json({ error: "Internal server error", details: err instanceof Error ? err.message : String(err) }, 500);
   }
-
-  const body = await c.req.json();
-  const parsed = loginRequestSchema.safeParse(body);
-  if (!parsed.success) {
-    return c.json({ error: "Password is required", code: ErrorCode.AUTH_PASSWORD_REQUIRED }, 400);
-  }
-
-  const ip = getIp(c);
-  const db = getDb(c);
-  const service = new AuthService(new AuthRepository(db));
-
-  const result = await service.login(parsed.data.password, secretPassword, ip);
-
-  if ("error" in result) {
-    const code = result.status === 429 ? ErrorCode.AUTH_RATE_LIMITED : ErrorCode.AUTH_INVALID_CREDENTIALS;
-    return c.json({ error: result.error, code }, result.status);
-  }
-
-  setCookie(c, "session", result.token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "Lax",
-    path: "/",
-    maxAge: 60 * 60 * 24, // 24 hours
-  });
-
-  return c.json({ success: true });
 });
 
 // POST /api/auth/logout
