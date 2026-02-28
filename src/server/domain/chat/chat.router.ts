@@ -4,6 +4,7 @@ import type { Env } from "../../env";
 import { getOpenRouterApiKey } from "../../env";
 import { getDb } from "../../db";
 import { ChatService } from "./chat.service";
+import { ErrorCode } from "@/shared/errors";
 
 export const chatRouter = new Hono<{ Bindings: Env }>();
 
@@ -13,7 +14,7 @@ chatRouter.post("/", async (c) => {
   const messages: UIMessage[] | undefined = body.messages;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return c.json({ error: "messages array is required" }, 400);
+    return c.json({ error: "messages array is required", code: ErrorCode.CHAT_MESSAGES_REQUIRED }, 400);
   }
 
   const db = getDb(c);

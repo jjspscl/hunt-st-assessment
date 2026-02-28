@@ -41,7 +41,7 @@ export function LoginForm() {
           </div>
 
           {login.isError && (
-            <p className="text-sm text-destructive">
+            <p className="text-sm text-destructive font-medium">
               {login.error.message}
             </p>
           )}

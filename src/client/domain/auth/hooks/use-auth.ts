@@ -2,6 +2,8 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AuthStatus } from "@/shared/types";
+import { ErrorCode } from "@/shared/errors";
+import { toastError, toastErrorFrom, toastSuccess } from "@/client/lib/toast";
 
 async function fetchAuthStatus(): Promise<AuthStatus> {
   const res = await fetch("/api/auth/status");
@@ -29,11 +31,24 @@ export function useLogin() {
         body: JSON.stringify({ password }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
+      if (!res.ok) {
+        // Resolve specific error code from server response
+        if (res.status === 429) throw Object.assign(new Error(data.error || "Too many attempts"), { code: ErrorCode.AUTH_RATE_LIMITED });
+        if (res.status === 401) throw Object.assign(new Error(data.error || "Invalid password"), { code: ErrorCode.AUTH_INVALID_CREDENTIALS });
+        throw new Error(data.error || "Login failed");
+      }
       return data;
     },
     onSuccess: () => {
+      toastSuccess("Signed in", "Welcome back!");
       queryClient.invalidateQueries({ queryKey: ["auth", "status"] });
+    },
+    onError: (err: Error & { code?: ErrorCode }) => {
+      if (err.code) {
+        toastError(err.code);
+      } else {
+        toastErrorFrom(err, ErrorCode.AUTH_LOGIN_FAILED);
+      }
     },
   });
 }
@@ -48,7 +63,11 @@ export function useLogout() {
       return res.json();
     },
     onSuccess: () => {
+      toastSuccess("Signed out", "See you next time!");
       queryClient.invalidateQueries({ queryKey: ["auth", "status"] });
+    },
+    onError: (err: Error) => {
+      toastErrorFrom(err, ErrorCode.AUTH_LOGOUT_FAILED);
     },
   });
 }

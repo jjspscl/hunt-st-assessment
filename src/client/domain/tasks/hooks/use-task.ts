@@ -2,6 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { Task, TaskDetail } from "@/shared/types";
+import { ErrorCode } from "@/shared/errors";
+import { toastErrorFrom } from "@/client/lib/toast";
 
 async function fetchTask(
   id: string
@@ -16,5 +18,9 @@ export function useTask(id: string) {
     queryKey: ["tasks", id],
     queryFn: () => fetchTask(id),
     enabled: !!id,
+    meta: {
+      errorHandler: (err: Error) =>
+        toastErrorFrom(err, ErrorCode.TASK_FETCH_FAILED),
+    },
   });
 }

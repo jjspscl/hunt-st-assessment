@@ -22,6 +22,19 @@ export {
   detailsListResponseSchema,
 } from "./api";
 
+// Error codes & maps
+export {
+  ErrorCode,
+  errorCodeSchema,
+  errorEntrySchema,
+  SERVER_ERROR_MAP,
+  CLIENT_ERROR_MAP,
+  resolveErrorCode,
+  getClientError,
+  getServerError,
+} from "../errors";
+export type { ErrorEntry } from "../errors";
+
 // Types
 export type { Task, TaskStatus, TaskDetail, TaskWithDetails } from "./task";
 export type { ChatMessageRole, ChatMessage, ChatRequest } from "./chat";

@@ -2,6 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import type { Task } from "@/shared/types";
+import { ErrorCode } from "@/shared/errors";
+import { toastErrorFrom } from "@/client/lib/toast";
 
 async function fetchTasks(): Promise<Task[]> {
   const res = await fetch("/api/tasks");
@@ -15,5 +17,9 @@ export function useTasks() {
     queryKey: ["tasks"],
     queryFn: fetchTasks,
     refetchInterval: 5000, // Poll every 5s for freshness
+    meta: {
+      errorHandler: (err: Error) =>
+        toastErrorFrom(err, ErrorCode.TASK_FETCH_FAILED),
+    },
   });
 }

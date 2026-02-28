@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { CheckCircle2, Circle, Clock } from "lucide-react";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ErrorCode } from "@/shared/errors";
+import { toastErrorFrom, toastSuccess } from "@/client/lib/toast";
 
 interface TaskCardProps {
   task: Task;
@@ -24,7 +26,11 @@ export function TaskCard({ task }: TaskCardProps) {
       return res.json();
     },
     onSuccess: () => {
+      toastSuccess("Task completed", `"${task.title}" marked as done.`);
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (err: Error) => {
+      toastErrorFrom(err, ErrorCode.TASK_COMPLETE_FAILED);
     },
   });
 

@@ -28,7 +28,7 @@ export const authMiddleware = createMiddleware<{ Bindings: Env }>(
     // Validate session cookie
     const sessionToken = getCookie(c, "session");
     if (!sessionToken) {
-      return c.json({ error: "Unauthorized" }, 401);
+      return c.json({ error: "Unauthorized", code: "AUTH_UNAUTHORIZED" }, 401);
     }
 
     const db = getDb(c);
@@ -41,7 +41,7 @@ export const authMiddleware = createMiddleware<{ Bindings: Env }>(
       .limit(1);
 
     if (!session || session.expiresAt < now) {
-      return c.json({ error: "Unauthorized" }, 401);
+      return c.json({ error: "Session expired", code: "AUTH_SESSION_EXPIRED" }, 401);
     }
 
     return next();

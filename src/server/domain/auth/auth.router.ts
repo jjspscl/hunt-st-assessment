@@ -6,6 +6,7 @@ import { getDb } from "../../db";
 import { AuthRepository } from "./auth.repository";
 import { AuthService } from "./auth.service";
 import { loginRequestSchema } from "@/shared/types";
+import { ErrorCode } from "@/shared/errors";
 
 export const authRouter = new Hono<{ Bindings: Env }>();
 
@@ -47,7 +48,7 @@ authRouter.post("/login", async (c) => {
   const body = await c.req.json();
   const parsed = loginRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: "Password is required" }, 400);
+    return c.json({ error: "Password is required", code: ErrorCode.AUTH_PASSWORD_REQUIRED }, 400);
   }
 
   const ip = getIp(c);
@@ -57,7 +58,8 @@ authRouter.post("/login", async (c) => {
   const result = await service.login(parsed.data.password, secretPassword, ip);
 
   if ("error" in result) {
-    return c.json({ error: result.error }, result.status);
+    const code = result.status === 429 ? ErrorCode.AUTH_RATE_LIMITED : ErrorCode.AUTH_INVALID_CREDENTIALS;
+    return c.json({ error: result.error, code }, result.status);
   }
 
   setCookie(c, "session", result.token, {

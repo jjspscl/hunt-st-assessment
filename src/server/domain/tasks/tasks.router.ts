@@ -5,6 +5,7 @@ import { TasksRepository } from "./tasks.repository";
 import { TasksService } from "./tasks.service";
 import { DetailsRepository } from "../details/details.repository";
 import { DetailsService } from "../details/details.service";
+import { ErrorCode } from "@/shared/errors";
 
 export const tasksRouter = new Hono<{ Bindings: Env }>();
 
@@ -24,7 +25,7 @@ tasksRouter.get("/:id", async (c) => {
 
   const task = await taskService.getTask(c.req.param("id"));
   if (!task) {
-    return c.json({ error: "Task not found" }, 404);
+    return c.json({ error: "Task not found", code: ErrorCode.TASK_NOT_FOUND }, 404);
   }
 
   const details = await detailsService.getDetails(task.id);
@@ -40,10 +41,10 @@ tasksRouter.patch("/:id", async (c) => {
   if (body.status === "completed") {
     const task = await service.completeTask(c.req.param("id"));
     if (!task) {
-      return c.json({ error: "Task not found" }, 404);
+      return c.json({ error: "Task not found", code: ErrorCode.TASK_NOT_FOUND }, 404);
     }
     return c.json({ task });
   }
 
-  return c.json({ error: "Invalid update" }, 400);
+  return c.json({ error: "Invalid update", code: ErrorCode.TASK_INVALID_UPDATE }, 400);
 });
