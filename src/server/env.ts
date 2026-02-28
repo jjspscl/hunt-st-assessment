@@ -22,11 +22,33 @@ export interface Env {
 }
 
 /**
- * Safely read an env var from c.env (Cloudflare) or process.env (local dev).
- * Works because `hono/vercel` handle() leaves c.env undefined in Node.js,
- * so we fall through to process.env.
+ * Get Cloudflare Pages request context (bindings & env).
+ * Returns undefined when running outside Cloudflare Pages (local dev).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getCfEnv(): Record<string, any> | undefined {
+  try {
+    // @cloudflare/next-on-pages provides runtime bindings via getRequestContext()
+    const { getRequestContext } = require("@cloudflare/next-on-pages");
+    return getRequestContext()?.env;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Safely read an env var.
+ * Priority: Cloudflare Pages context → c.env (Hono) → process.env (local dev).
  */
 function readVar(c: Context, key: string): string | undefined {
+  // 1. Cloudflare Pages runtime bindings
+  const cfEnv = getCfEnv();
+  if (cfEnv) {
+    const val = cfEnv[key];
+    if (val !== undefined && val !== null && typeof val === "string") return val;
+  }
+
+  // 2. Hono c.env (Cloudflare Workers direct)
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const val = (c.env as any)?.[key];
@@ -34,6 +56,8 @@ function readVar(c: Context, key: string): string | undefined {
   } catch {
     // c.env may throw if proxy-based
   }
+
+  // 3. Node.js process.env (local dev)
   return typeof process !== "undefined" ? process.env[key] : undefined;
 }
 
@@ -49,12 +73,19 @@ export function getOpenRouterApiKey(c: Context): string {
 
 /**
  * Get the raw D1 binding. Returns undefined in local dev.
+ * Checks Cloudflare Pages context first, then Hono c.env.
  */
 export function getD1Binding(c: Context): D1Database | undefined {
+  // 1. Cloudflare Pages runtime context
+  const cfEnv = getCfEnv();
+  if (cfEnv?.DB && typeof cfEnv.DB === "object" && typeof cfEnv.DB.prepare === "function") {
+    return cfEnv.DB as D1Database;
+  }
+
+  // 2. Hono c.env (Cloudflare Workers direct)
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = (c.env as any)?.DB;
-    // D1Database is an object, not a string
     if (db && typeof db === "object" && typeof db.prepare === "function") {
       return db as D1Database;
     }

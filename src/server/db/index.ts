@@ -25,6 +25,13 @@ export function getDb(c: Context): any {
     return drizzleD1(d1, { schema });
   }
 
+  // Edge runtime — no D1 binding means something is misconfigured
+  if (typeof globalThis.process === "undefined" || !globalThis.process?.versions?.node) {
+    throw new Error(
+      "D1 binding not found. Ensure the D1 database is bound in Cloudflare Pages settings (binding name: DB)."
+    );
+  }
+
   // Local dev: use better-sqlite3
   if (!_localDb) {
     // Dynamic require for better-sqlite3 (only available in Node.js)
