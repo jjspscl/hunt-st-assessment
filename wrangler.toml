@@ -5,6 +5,6 @@ pages_build_output_dir = ".vercel/output/static"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "chat-task-tracker-db"
+database_name = "llm-todo"
 database_id = "local"
 migrations_dir = "drizzle/migrations"
