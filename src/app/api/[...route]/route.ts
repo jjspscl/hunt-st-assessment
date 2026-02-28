@@ -1,9 +1,9 @@
 import { handle } from "hono/vercel";
 import app from "@/server";
 
-// Use Node.js runtime for local dev (better-sqlite3 is a native module).
-// On Cloudflare Pages, runtime is always edge regardless of this setting.
-export const runtime = "nodejs";
+// Edge runtime is required for Cloudflare Pages.
+// Local dev (next dev) ignores this and runs in Node.js where better-sqlite3 works.
+export const runtime = "edge";
 
 export const GET = handle(app);
 export const POST = handle(app);
