@@ -24,7 +24,7 @@ export function useChatStream() {
     (e: React.FormEvent) => {
       e.preventDefault();
       if (!input.trim()) return;
-      send({ content: input });
+      send({ text: input });
       setInput("");
     },
     [input, send]
@@ -33,7 +33,7 @@ export function useChatStream() {
   const sendMessage = useCallback(
     (message: string) => {
       if (!message.trim()) return;
-      send({ content: message });
+      send({ text: message });
     },
     [send]
   );
