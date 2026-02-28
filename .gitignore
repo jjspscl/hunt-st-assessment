@@ -47,5 +47,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vscode*.sqlite-shm
+.vscode
+*.sqlite-shm
 *.sqlite-wal
