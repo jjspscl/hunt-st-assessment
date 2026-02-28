@@ -10,16 +10,17 @@ import { Markdown } from "@/client/components/markdown";
 interface MessageListProps {
   messages: UIMessage[];
   isLoading: boolean;
+  isFetchingHistory?: boolean;
 }
 
-export function MessageList({ messages, isLoading }: MessageListProps) {
+export function MessageList({ messages, isLoading, isFetchingHistory }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  if (messages.length === 0) {
+  if (messages.length === 0 && !isFetchingHistory) {
     return (
       <div className="flex-1 flex items-center justify-center text-muted-foreground px-3 sm:px-4">
         <div className="text-center space-y-2 sm:space-y-3 border border-border rounded-sm p-4 sm:p-6 md:p-8 bg-background w-full max-w-md">
@@ -37,6 +38,13 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
 
   return (
     <div className="flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 space-y-3 sm:space-y-4">
+      {/* Background refetch indicator */}
+      {isFetchingHistory && messages.length > 0 && (
+        <div className="flex items-center justify-center gap-1.5 py-1">
+          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+          <span className="text-[11px] text-muted-foreground">Syncing messages…</span>
+        </div>
+      )}
       {messages.map((message) => (
         <div
           key={message.id}
