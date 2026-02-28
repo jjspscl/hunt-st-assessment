@@ -1,0 +1,22 @@
+"use client";
+
+import { useChatStream } from "../hooks/use-chat-stream";
+import { MessageList } from "./message-list";
+import { MessageInput } from "./message-input";
+
+export function ChatPanel() {
+  const { messages, input, setInput, handleSubmit, isLoading } =
+    useChatStream();
+
+  return (
+    <div className="flex flex-col h-full">
+      <MessageList messages={messages} isLoading={isLoading} />
+      <MessageInput
+        input={input}
+        setInput={setInput}
+        handleSubmit={handleSubmit}
+        isLoading={isLoading}
+      />
+    </div>
+  );
+}
