@@ -3,8 +3,10 @@ compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
+# D1 binding — database_id is injected at deploy time from GitHub Secrets
+# to keep this public repo safe. See SETUP.md for details.
 [[d1_databases]]
 binding = "DB"
 database_name = "llm-todo"
-database_id = "local"
+database_id = "placeholder"
 migrations_dir = "drizzle/migrations"
