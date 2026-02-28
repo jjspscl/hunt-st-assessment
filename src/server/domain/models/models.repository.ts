@@ -1,16 +1,16 @@
-import { eq } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { models } from "./models.schema";
 import type { Database } from "../../db";
 
 export class ModelsRepository {
   constructor(private db: Database) {}
 
-  /** Get all available models, sorted default first */
+  /** Get all available models, sorted by quality (lower sort_order = better) */
   async listAll() {
     return this.db
       .select()
       .from(models)
-      .orderBy(models.isDefault)
+      .orderBy(asc(models.sortOrder))
       .all();
   }
 
@@ -48,6 +48,7 @@ export class ModelsRepository {
       contextLength: number;
       maxCompletionTokens: number | null;
       description: string | null;
+      sortOrder: number;
     }>
   ) {
     const now = new Date().toISOString();
@@ -69,6 +70,7 @@ export class ModelsRepository {
             contextLength: entry.contextLength,
             maxCompletionTokens: entry.maxCompletionTokens,
             description: entry.description,
+            sortOrder: entry.sortOrder,
             updatedAt: now,
           })
           .where(eq(models.id, entry.id))
@@ -85,6 +87,16 @@ export class ModelsRepository {
           .execute();
       }
     }
+  }
+
+  /** Update the health-check status of a model */
+  async updateStatus(modelId: string, status: "untested" | "ok" | "error") {
+    const now = new Date().toISOString();
+    await this.db
+      .update(models)
+      .set({ status, lastTestedAt: now, updatedAt: now })
+      .where(eq(models.id, modelId))
+      .execute();
   }
 
   /** Remove models that are no longer available */

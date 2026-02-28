@@ -8,17 +8,22 @@ CREATE TABLE IF NOT EXISTS models (
   max_completion_tokens INTEGER,
   description TEXT,
   is_default INTEGER NOT NULL DEFAULT 0,
+  sort_order INTEGER NOT NULL DEFAULT 999,
+  status TEXT NOT NULL DEFAULT 'untested',
+  last_tested_at TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 -- Seed the default model
-INSERT OR IGNORE INTO models (id, name, context_length, max_completion_tokens, description, is_default)
+INSERT OR IGNORE INTO models (id, name, context_length, max_completion_tokens, description, is_default, sort_order, status)
 VALUES (
   'stepfun/step-3.5-flash:free',
   'StepFun Step 3.5 Flash',
   8192,
   4096,
   'Free tier model with reliable tool-calling support via OpenRouter.',
-  1
+  1,
+  60,
+  'ok'
 );

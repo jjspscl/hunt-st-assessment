@@ -73,8 +73,18 @@ export function getOpenRouterApiKey(c: Context): string {
 /**
  * Get the raw D1 binding. Returns undefined in local dev.
  * Checks OpenNext Cloudflare context first, then Hono c.env.
+ *
+ * In Node.js (next dev), we always return undefined so the caller
+ * falls through to the better-sqlite3 local database. The OpenNext
+ * adapter creates a D1 proxy even in dev, but it points at the
+ * placeholder database_id and fails.
  */
 export function getD1Binding(c: Context): D1Database | undefined {
+  // Skip D1 entirely when running under Node.js (local dev)
+  if (typeof globalThis.process !== "undefined" && globalThis.process?.versions?.node) {
+    return undefined;
+  }
+
   // 1. OpenNext Cloudflare context
   const cfEnv = getCfEnv();
   if (cfEnv?.DB && typeof cfEnv.DB === "object" && typeof cfEnv.DB.prepare === "function") {

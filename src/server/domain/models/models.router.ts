@@ -1,16 +1,21 @@
 import { Hono } from "hono";
 import type { Env } from "../../env";
 import { getDb } from "../../db";
+import { getOpenRouterApiKey } from "../../env";
 import { ModelsRepository } from "./models.repository";
 import { ModelsService } from "./models.service";
 
 export const modelsRouter = new Hono<{ Bindings: Env }>();
 
-// GET /api/models — list all available models
+// GET /api/models — list all available models (only working ones)
 modelsRouter.get("/", async (c) => {
   const db = getDb(c);
   const service = new ModelsService(new ModelsRepository(db));
-  const models = await service.list();
+  const allModels = await service.list();
+  // Only show models that passed health-check (or are untested/default)
+  const models = allModels.filter(
+    (m: { status: string; isDefault: boolean }) => m.status === "ok" || m.isDefault
+  );
   const activeId = await service.getActiveModelId();
   return c.json({ models, activeId });
 });
@@ -31,7 +36,8 @@ modelsRouter.post("/active", async (c) => {
 // POST /api/models/sync — manually trigger a sync from OpenRouter
 modelsRouter.post("/sync", async (c) => {
   const db = getDb(c);
-  const service = new ModelsService(new ModelsRepository(db));
+  const apiKey = getOpenRouterApiKey(c);
+  const service = new ModelsService(new ModelsRepository(db), apiKey);
   const result = await service.syncFromOpenRouter();
   return c.json({ success: true, ...result });
 });

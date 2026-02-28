@@ -132,7 +132,7 @@ export function ModelSelector() {
                 </button>
               </div>
             ) : (
-              models.map((model) => {
+              models.map((model, index) => {
                 const isActive = model.id === activeId;
                 return (
                   <button
@@ -148,6 +148,9 @@ export function ModelSelector() {
                     )}
                   >
                     <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono text-muted-foreground/60 w-4 shrink-0 text-right">
+                        {index + 1}
+                      </span>
                       <span
                         className={cn(
                           "h-1.5 w-1.5 rounded-full shrink-0",
@@ -160,7 +163,7 @@ export function ModelSelector() {
                       </span>
                     </div>
                     {model.description && (
-                      <span className="text-xs text-muted-foreground pl-3.5 line-clamp-1">
+                      <span className="text-xs text-muted-foreground pl-7 line-clamp-1">
                         {model.description}
                       </span>
                     )}

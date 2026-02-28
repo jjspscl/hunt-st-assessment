@@ -73,6 +73,9 @@ export function getLocalDb(): any {
       max_completion_tokens INTEGER,
       description TEXT,
       is_default INTEGER NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 999,
+      status TEXT NOT NULL DEFAULT 'untested',
+      last_tested_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );

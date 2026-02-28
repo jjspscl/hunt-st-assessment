@@ -15,6 +15,7 @@ import { ModelsService } from "../domain/models/models.service";
 export interface CronEnv {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DB: any;
+  OPENROUTER_API_KEY?: string;
   [key: string]: unknown;
 }
 
@@ -28,9 +29,17 @@ export async function handleScheduled(
   const promise = (async () => {
     try {
       const db = drizzleD1(env.DB, { schema });
-      const service = new ModelsService(new ModelsRepository(db));
+      const apiKey = env.OPENROUTER_API_KEY;
+      if (!apiKey) {
+        console.error("[cron] OPENROUTER_API_KEY not set, skipping model sync");
+        return;
+      }
+      const service = new ModelsService(new ModelsRepository(db), apiKey);
       const result = await service.syncFromOpenRouter();
-      console.log(`[cron] Model sync completed: ${result.synced} models synced`, result.models);
+      console.log(
+        `[cron] Model sync completed: ${result.synced} candidates, ${result.ok} ok, ${result.failed} failed`,
+        result.models,
+      );
     } catch (err) {
       console.error("[cron] Model sync failed:", err);
     }
