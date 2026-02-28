@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "build:cf": "opennextjs-cloudflare build",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "build:cf": "opennextjs-cloudflare build && node scripts/wrap-worker.mjs",
+    "preview": "opennextjs-cloudflare build && node scripts/wrap-worker.mjs && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && node scripts/wrap-worker.mjs && opennextjs-cloudflare deploy",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",

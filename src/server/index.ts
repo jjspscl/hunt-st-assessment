@@ -8,6 +8,7 @@ import { tasksRouter } from "./domain/tasks/tasks.router";
 import { detailsRouter } from "./domain/details/details.router";
 import { chatRouter } from "./domain/chat/chat.router";
 import { adminRouter } from "./domain/admin/admin.router";
+import { modelsRouter } from "./domain/models/models.router";
 
 const app = new Hono<{ Bindings: Env }>().basePath("/api");
 
@@ -27,6 +28,7 @@ app.route("/tasks", tasksRouter);
 app.route("/tasks", detailsRouter);
 app.route("/chat", chatRouter);
 app.route("/admin", adminRouter);
+app.route("/models", modelsRouter);
 
 export default app;
 export type AppType = typeof app;

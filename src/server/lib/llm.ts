@@ -1,6 +1,8 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 
-export function createLlmClient(apiKey: string) {
+const DEFAULT_MODEL = "stepfun/step-3.5-flash:free";
+
+export function createLlmClient(apiKey: string, modelId?: string) {
   const openrouter = createOpenRouter({ apiKey });
-  return openrouter("stepfun/step-3.5-flash:free");
+  return openrouter(modelId ?? DEFAULT_MODEL);
 }

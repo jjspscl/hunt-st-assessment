@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { MessageSquare, ListTodo, LogOut } from "lucide-react";
+import { MessageSquare, ListTodo, LogOut, Github } from "lucide-react";
 import { useAuthStatus, useLogout } from "@/client/domain/auth/hooks/use-auth";
+import { ModelSelector } from "@/client/domain/models/components/model-selector";
 
 export function Header() {
   const pathname = usePathname();
@@ -44,7 +45,18 @@ export function Header() {
             );
           })}
         </nav>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          <ModelSelector />
+          <a
+            href="https://github.com/jjspscl/llm-todo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 sm:gap-2 rounded-sm border border-foreground bg-foreground text-background px-2 sm:px-3 py-1.5 text-sm shadow-[2px_2px_0px_#1E1E1E] hover:opacity-80 transition-all"
+            aria-label="GitHub Repository"
+          >
+            <Github className="h-4 w-4" />
+            <span className="hidden sm:inline">GitHub</span>
+          </a>
           {auth?.authRequired && auth?.authenticated && (
             <button
               onClick={() => logout.mutate()}

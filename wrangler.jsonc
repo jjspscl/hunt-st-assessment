@@ -41,5 +41,9 @@
       "persist": true,
       "head_sampling_rate": 1
     }
+  },
+  // Cron trigger: sync free LLM models from OpenRouter every 6 hours
+  "triggers": {
+    "crons": ["0 */6 * * *"]
   }
 }

@@ -88,6 +88,16 @@ export function getDb(c: Context): any {
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         expires_at TEXT NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS models (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        context_length INTEGER NOT NULL,
+        max_completion_tokens INTEGER,
+        description TEXT,
+        is_default INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
     `);
 
     _localDb = drizzleSqlite(sqlite, { schema });

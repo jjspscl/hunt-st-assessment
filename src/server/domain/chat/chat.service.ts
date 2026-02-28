@@ -12,6 +12,8 @@ import { TasksRepository } from "../tasks/tasks.repository";
 import { TasksService } from "../tasks/tasks.service";
 import { DetailsRepository } from "../details/details.repository";
 import { DetailsService } from "../details/details.service";
+import { ModelsRepository } from "../models/models.repository";
+import { ModelsService } from "../models/models.service";
 import {
   generateIdempotencyKey,
   checkIdempotencyKey,
@@ -23,11 +25,13 @@ export class ChatService {
   private chatRepo: ChatRepository;
   private tasksService: TasksService;
   private detailsService: DetailsService;
+  private modelsService: ModelsService;
 
   constructor(private db: Database, private apiKey: string) {
     this.chatRepo = new ChatRepository(db);
     this.tasksService = new TasksService(new TasksRepository(db));
     this.detailsService = new DetailsService(new DetailsRepository(db));
+    this.modelsService = new ModelsService(new ModelsRepository(db));
   }
 
   /** Load persisted conversation history for a specific user/session. */
@@ -69,8 +73,9 @@ export class ChatService {
     // Create tools
     const tools = createChatTools(this.tasksService, this.detailsService);
 
-    // Stream response
-    const model = createLlmClient(this.apiKey);
+    // Stream response — use active model from DB
+    const activeModelId = await this.modelsService.getActiveModelId();
+    const model = createLlmClient(this.apiKey, activeModelId);
 
     const chatRepo = this.chatRepo;
     const db = this.db;
