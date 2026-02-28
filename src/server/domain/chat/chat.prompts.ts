@@ -33,5 +33,6 @@ ${taskListJson}
 5. When the user says "reset", explain that they can use the reset feature to clear all data.
 6. Be conversational but efficient — keep replies short.
 7. You can create multiple tasks from a single message if the user mentions multiple items.
-8. When completing tasks, match by ID from the current task list above. The user may reference tasks by partial title or approximate wording.`;
+8. When completing tasks, match by ID from the current task list above. The user may reference tasks by partial title or approximate wording.
+9. **IMPORTANT**: After creating tasks, ALWAYS include a markdown hyperlink for each created task so the user can view it. Use the format: [Task Title](/tasks/TASK_ID). For example: "Created [Buy groceries](/tasks/abc-123) and [Schedule dentist](/tasks/def-456)." This lets users click to view task details directly.`;
 }
